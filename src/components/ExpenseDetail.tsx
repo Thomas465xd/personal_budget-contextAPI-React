@@ -1,4 +1,5 @@
 import { useMemo } from "react"
+import { useBudget } from "../hooks/useBudget"
 import { categories } from "../data/categories"
 import { formatDate } from "../helpers"
 import { Expense } from "../types"
@@ -17,13 +18,15 @@ type ExpenseDetailProps = {
 }
 
 export default function ExpenseDetail({expense} : ExpenseDetailProps) {
+    
+    const { dispatch } = useBudget()
 
     const categoryInfo = useMemo(() => categories.filter(cat => cat.id === expense.category)[0], [expense])
 
     const leadingActions = () => (
         <LeadingActions>
             <SwipeAction
-                onClick={() => {}}
+                onClick={() => dispatch({type: "get-expense-by-id", payload: {id: expense.id}})}
             >
                 Update
             </SwipeAction>
@@ -31,14 +34,14 @@ export default function ExpenseDetail({expense} : ExpenseDetailProps) {
     )
 
     const trailingActions = () => (
-        <LeadingActions>
+        <TrailingActions>
             <SwipeAction
-                onClick={() => {}}
+                onClick={() => dispatch({type: "remove-expense", payload: {id: expense.id}})}
                 destructive={true}
             >
                 Delete
             </SwipeAction>
-        </LeadingActions>
+        </TrailingActions>
     )
 
     return (
@@ -48,7 +51,7 @@ export default function ExpenseDetail({expense} : ExpenseDetailProps) {
                 leadingActions={leadingActions()}
                 trailingActions={trailingActions()}
             >
-                <div className="bg-white shadow-lg p-10 w-full border-b border-gray-200 flex gap-5 items-center">
+                <div className="bg-white shadow-lg p-5 w-full border-b border-gray-200 flex gap-5 items-center">
                     <div className="">
                         <img 
                             src={`/icono_${categoryInfo.icon}.svg`} 

@@ -1,4 +1,4 @@
-import { ChangeEvent, FormEvent, useState } from "react";
+import { ChangeEvent, FormEvent, useEffect, useState } from "react";
 import type { DraftExpense, Value } from "../types";
 import { categories } from "../data/categories";
 import DatePicker from "react-date-picker";
@@ -16,8 +16,17 @@ export default function ExpenseForm() {
     });
 
     const [error, setError] = useState('')
+    const [previousAmount, setPreviousAmount] = useState(0)
+    const { dispatch, state, remainingBudget } = useBudget()
 
-    const { dispatch } = useBudget()
+    useEffect(() => {
+        if(state.editingId) {
+            const editingExpense = state.expenses.filter( currentExpense => currentExpense.id === state.editingId)[0]
+
+            setExpense(editingExpense)
+            setPreviousAmount(editingExpense.amount)
+        }
+    }, [state.editingId])
 
     const handleChangeDate = (value : Value) => {
         setExpense({
@@ -46,8 +55,18 @@ export default function ExpenseForm() {
             return
         }
 
-        // Agregar un nuevo gasto
-        dispatch({type: "add-expense", payload: {expense}})
+        // Validar el presupuesto
+        if(remainingBudget < (expense.amount - previousAmount)) {
+            setError("Not enough budget")
+            return
+        }
+
+        // Agregar un nuevo gasto o actualizar el gasto existente
+        if(state.editingId) {
+            dispatch({type: "update-expense", payload: {expense: { id: state.editingId, ...expense}}})
+        } else {
+            dispatch({type: "add-expense", payload: {expense}})
+        }
 
         //Resetear el formulario
         setExpense({
@@ -61,7 +80,7 @@ export default function ExpenseForm() {
     return (
         <form action="" className="space-y-5" onSubmit={handleSubmit}>
             <legend className="uppercase text-center text-2xl font-black border-b-4 border-orange-300 py-2">
-                New Expense
+                {state.editingId ? "Edit expense" : "Add new expense"}
             </legend>
 
             {error && <ErrorMessage>{error}</ErrorMessage>}
@@ -132,7 +151,7 @@ export default function ExpenseForm() {
             <input
                 type="submit"
                 className="bg-orange-500 hover:bg-orange-700 text-white font-bold py-2 px-4 rounded-lg w-full"
-                value={"Add Expense"}
+                value={state.editingId ? "Update Expense" : "Add Expense"}
             />
         </form>
     );
