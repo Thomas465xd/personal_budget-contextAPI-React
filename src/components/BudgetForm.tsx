@@ -2,6 +2,7 @@ import { ChangeEvent, FormEvent, useMemo, useState } from "react";
 import { useBudget } from "../hooks/useBudget";
 
 export default function BudgetForm() {
+
     const [budget, setBudget] = useState<number | string>(0); // Allow string to handle empty input
     const { dispatch } = useBudget()
 
@@ -23,7 +24,7 @@ export default function BudgetForm() {
     }
 
     return (
-        <form action="" className="space-y-5">
+        <form onSubmit={handleSubmit} className="space-y-5">
             <div className="flex flex-col space-y-5">
                 <label htmlFor="budget" className="text-4xl text-orange-500 font-bold text-center">
                     Define Budget
